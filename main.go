@@ -1,7 +1,7 @@
 package main
 
 import(
-	routes "go-figure/routes"
+	"github.com/Bii-sama/go-figure.git/routes"
 	"os"
 	"github.com/gin-gonic/gin"
 
