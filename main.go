@@ -20,6 +20,7 @@ func main()  {
 
 	routes.Authroutes(router)
 	routes.UserRoutes(router)
+	routes.BillRoutes(router)
 
 	router.GET("api-1", func(ctx *gin.Context) {
 		ctx.JSON(200,gin.H{"success": "Access granted for Api-1"})
