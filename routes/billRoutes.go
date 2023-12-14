@@ -10,8 +10,8 @@ import (
 func BillRoutes(incomingRoutes *gin.Engine)  {
 	incomingRoutes.Use(middlewares.Auth())
 	incomingRoutes.GET("/bills",controllers.GetAllBills())
-	incomingRoutes.GET("/bills/bill_id", controllers.GetABill())
+	incomingRoutes.GET("/bills/:bill_id", controllers.GetABill())
 	incomingRoutes.POST("/createbill", controllers.CreateBill())
-	incomingRoutes.PATCH("/updatebill", controllers.UpdateBill())
-	incomingRoutes.DELETE("/deletebill", controllers.DeleteBill())
+	incomingRoutes.PATCH("/updatebill/:bill_id", controllers.UpdateBill())
+	incomingRoutes.DELETE("/deletebill/:bill_id", controllers.DeleteBill())
 }
