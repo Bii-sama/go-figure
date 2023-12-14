@@ -1,27 +1,54 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"time"
 	"os"
+	"time"
+
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"github.com/joho/godotenv"
 )
 
 func DBConnect() *mongo.Client {
 	err := godotenv.Load(".env")
 
 	if err != nil{
-		log.Fatal("Err Loading .env file")
+		log.Fatalln("Err Loading .env file")
 	}
 
 	Mongo_DB := os.Getenv("MONGO_URI")
 
-	client, error := mongo.NewClient(options.Client().ApplyURI(Mongo_DB))
+	clientOptions := options.Client().ApplyURI(Mongo_DB)
 
-        if error != nil{
-			log.Fatal(error)
+	client, err := mongo.NewClient(clientOptions)
+
+        if err != nil{
+			log.Fatalln(err)
 		}
+
+		ctx, cancel :=  context.WithTimeout(context.Background(), 10*time.Second)
+
+		defer cancel()
+
+	 client.Connect(ctx)
+
+		if err != nil{
+			log.Fatalln(err)
+		}
+
+		fmt.Println("Database Connected and We are up people")
+
+		return client
+
+}
+
+
+var client *mongo.Client = DBConnect()
+
+func NewCollection(client *mongo.Client, collectionName string) *mongo.Collection {
+	collection := client.Database("User").Collection(collectionName)
+	return collection
 }
