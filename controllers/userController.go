@@ -1,8 +1,23 @@
 package controllers
 
 import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
+	"strconv"
+	"time"
 
+	"github.com/Bii-sama/go-figure.git/database"
+	"github.com/Bii-sama/go-figure.git/models"
+	"github.com/Bii-sama/go-figure.git/utils"
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 )
+
+var userCollection *mongo.Collection = database.NewCollection()
 
 func HashPassword()  {
 	
