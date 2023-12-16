@@ -46,9 +46,9 @@ func DBConnect() *mongo.Client {
 }
 
 
-var client *mongo.Client = DBConnect()
+var Client *mongo.Client = DBConnect()
 
 func NewCollection(client *mongo.Client, collectionName string) *mongo.Collection {
-	collection := client.Database("User").Collection(collectionName)
+	collection := client.Database("clluster0").Collection(collectionName)
 	return collection
 }
