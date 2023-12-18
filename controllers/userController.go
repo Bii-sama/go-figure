@@ -40,6 +40,14 @@ func GetUsers()  {
 	
 }
 
-func GetAUser()  {
-	
+func GetAUser () gin.HandlerFunc  {
+
+	return func(ctx *gin.Context) {
+		userId := ctx.Param("user_id")
+
+		if err := utils.CheckTypeEqualsUserId(ctx, userId); err != nil{
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
 }
