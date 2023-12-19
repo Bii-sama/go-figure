@@ -65,7 +65,19 @@ func SignUp() gin.HandlerFunc {
 		user.User_ID = user.ID.Hex()
 
 
-		token, refreshToken, _ := utils.GenerateAllTokens(*user.Email, *user.Firstname, *user.Lastname)
+		token, refreshToken, _ := utils.GenerateAllTokens(*user.Email, *user.Firstname, *user.Lastname, *&user.User_Type, *&user.User_ID)
+		user.Token = &token
+		user.Refresh_token = &refreshToken
+
+		resultInsertNo, insertErr := userCollection.InsertOne(ctx, user)
+
+		if insertErr != nil{
+			msg := fmt.Sprintf("User Item was not created")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+			return
+		}
+		defer cancel()
+		c.JSON(http.StatusOK, resultInsertNo)
 	}
 }
 
