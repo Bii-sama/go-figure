@@ -74,7 +74,7 @@ func SignUp() gin.HandlerFunc {
 
 		}
 		
-		password := HashPassword(*&user.Password)
+		password := HashPassword(*user.Password)
 		user.Password = &password
 
 		user.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
@@ -131,6 +131,8 @@ func Login() gin.HandlerFunc  {
 		if checkUser.Email == nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "user not found"})
 		}
+
+		token, refreshToken, _:= utils.GenerateAllTokens(*checkUser.Email, *checkUser.Firstname, *checkUser.Lastname, *checkUser.User_Type, checkUser.User_ID)
 
 	}
 }
