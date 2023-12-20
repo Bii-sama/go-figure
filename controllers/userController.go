@@ -22,8 +22,14 @@ import (
 var userCollection *mongo.Collection = database.NewCollection(database.Client, "user")
 var validate = validator.New()
 
-func HashPassword()  {
-	
+func HashPassword(password string) string {
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+
+	if err != nil{
+      log.Panicln(err)
+	}
+	return string(hashedPassword)
 }
 
 func PasswordVerification(userPassword string, enteredPassword string)(bool, string)  {
@@ -65,7 +71,11 @@ func SignUp() gin.HandlerFunc {
 
 		if count > 0{
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "This email already exists"})
+
 		}
+		
+		password := HashPassword(*&user.Password)
+		user.Password = &password
 
 		user.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		user.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
@@ -112,6 +122,16 @@ func Login() gin.HandlerFunc  {
 
 		passwordCheck, msg := PasswordVerification(*user.Password, *checkUser.Password)
 		defer cancel()
+
+		if passwordCheck != true{
+			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+			return
+		}
+
+		if checkUser.Email == nil{
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "user not found"})
+		}
+
 	}
 }
 
