@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"github.com/gin-gonic/gin"
 	"fmt"
 	"log"
 	"context"
@@ -24,10 +23,35 @@ type SignUpInfo struct{
 	jwt.StandardClaims
 }
 
-var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
+var userCollection *mongo.Collection = database.NewCollection(database.Client, "user")
 
 var SECRET_KEY string = os.Getenv("JWT_SECRET")
 
-func GenerateAllTokens(email string, firstname string, lastname string, user_type string, uid string)  {
-	
+func GenerateAllTokens(email string, firstname string, lastname string, userType string, uid string) (signedToken string, signedRefreshToken string, err error) {
+	claims := &SignUpInfo{
+		Email: email,
+		Firstname: firstname,
+		Lastname: lastname,
+		User_Type: userType,
+		Uid: uid,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
+		},
+	}
+
+	refreshClaims := &SignUpInfo{
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(168)).Unix(),
+		},
+	}
+
+	token, err := jwt.NewWithClaims(jwt.SigningMethodES256, claims).SignedString([]byte(SECRET_KEY))
+	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodES256, refreshClaims).SignedString([]byte(SECRET_KEY))
+
+	if err != nil{
+		log.Panicln(err)
+		return
+	}
+
+	return token, refreshToken, err
 }

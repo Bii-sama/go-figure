@@ -26,8 +26,16 @@ func HashPassword()  {
 	
 }
 
-func PasswordVerification()  {
-	
+func PasswordVerification(userPassword string, enteredPassword string)(bool, string)  {
+	err := bcrypt.CompareHashAndPassword([]byte(enteredPassword), []byte(userPassword))
+	check := true
+	msg := ""
+
+	if err != nil{
+		msg = fmt.Sprintf("Email/Password is invalid")
+		check = false
+	}
+	return check, msg
 }
 
 func SignUp() gin.HandlerFunc {
@@ -65,7 +73,7 @@ func SignUp() gin.HandlerFunc {
 		user.User_ID = user.ID.Hex()
 
 
-		token, refreshToken, _ := utils.GenerateAllTokens(*user.Email, *user.Firstname, *user.Lastname, *&user.User_Type, *&user.User_ID)
+		token, refreshToken, _ := utils.GenerateAllTokens(*user.Email, *user.Firstname, *user.Lastname, *user.User_Type, *&user.User_ID)
 		user.Token = &token
 		user.Refresh_token = &refreshToken
 
@@ -81,8 +89,30 @@ func SignUp() gin.HandlerFunc {
 	}
 }
 
-func Login()  {
-	
+func Login() gin.HandlerFunc  {
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 100 * time.Second)
+
+		var user *models.User
+
+		var checkUser *models.User
+
+		if err := c.BindJSON(&user); err != nil{
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&checkUser)
+		defer cancel()
+
+		if err != nil{
+          c.JSON(http.StatusInternalServerError, gin.H{"error": "Email/Password invalid"})
+		  return
+		}
+
+		passwordCheck, msg := PasswordVerification(*user.Password, *checkUser.Password)
+		defer cancel()
+	}
 }
 
 func GetUsers()  {
