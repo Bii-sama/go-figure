@@ -1,16 +1,18 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"context"
 	"os"
 	"time"
+
 	"github.com/Bii-sama/go-figure.git/database"
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 
@@ -58,8 +60,36 @@ func GenerateAllTokens(email string, firstname string, lastname string, userType
 
 
 
-func UpdateTokens(signedTokentoken string, signedRefreshToken string, uid string)  {
+func UpdateTokens(signedToken string, signedRefreshToken string, uid string)  {
 	var ctx, cancel = context.WithTimeout(context.Background(), 100 * time.Second)
 
 	var updateObject primitive.D
+
+	updateObject = append(updateObject, primitive.E{Key:"token", Value: signedToken})
+	updateObject = append(updateObject, primitive.E{Key:"refresh_token", Value: signedRefreshToken})
+
+	Updated_at, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+
+	updateObject = append(updateObject, primitive.E{Key: "updated_at", Value: Updated_at})
+
+	upsert := true
+	filter := bson.M{"user_id": uid}
+
+	opt:=options.UpdateOptions{
+		Upsert: &upsert,
+	}
+
+	_, err := userCollection.UpdateOne(ctx, filter, bson.D{{Key: "$set", Value: updateObject}}, &opt,)
+
+
+	defer cancel()
+
+	if err != nil{
+
+		log.Panic(err)
+		return
+
+	}
+
+	return
 }
