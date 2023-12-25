@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os/user"
 	"strconv"
 	"time"
 
@@ -146,7 +147,28 @@ func Login() gin.HandlerFunc  {
 	}
 }
 
-func GetUsers()  {
+func GetUsers() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+     if err:= utils.CheckUserType(c, "ADMIN"); err != nil{
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	 }
+
+	 var ctx, cancel = context.WithTimeout(context.Background(), 100 * time.Second)
+
+	var users models.User
+
+	err := userCollection.Find(ctx, bson.M{"":}).Decode(&users)
+	defer cancel()
+
+	if err != nil{
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+	c.JSON(http.StatusOK, users)
+	}
+
 	
 }
 

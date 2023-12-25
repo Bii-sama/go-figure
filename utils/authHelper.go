@@ -6,8 +6,8 @@ import (
 	"errors"
 )
 
-func CheckUserType (ctx *gin.Context, role string) (err error){
-       userType := ctx.GetString("user_type")
+func CheckUserType(c *gin.Context, role string) (err error){
+       userType := c.GetString("user_type")
 	   err = nil
 
 	   if userType != role{
