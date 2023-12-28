@@ -117,4 +117,12 @@ func ValidateToken(signedToken string)(claims *SignUpInfo, msg string)  {
 		msg = err.Error()
 		return
 	}
+
+	if claims.ExpiresAt < time.Now().Local().Unix(){
+		msg = fmt.Sprintf("Exprired Token")
+		msg = err.Error()
+		return
+	}
+
+	return claims, msg
 }

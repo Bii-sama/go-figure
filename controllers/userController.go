@@ -49,6 +49,7 @@ func PasswordVerification(userPassword string, enteredPassword string)(bool, str
 func SignUp() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100 * time.Second)
+		defer cancel()
 		var user models.User
 
 		if err := c.BindJSON(&user); err != nil{
@@ -104,6 +105,7 @@ func SignUp() gin.HandlerFunc {
 func Login() gin.HandlerFunc  {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100 * time.Second)
+		defer cancel()
 
 		var user *models.User
 
@@ -171,7 +173,7 @@ func GetUsers() gin.HandlerFunc {
 
 	 startIndex := (page - 1)  * recordPerPage
 
-	 startIndex, err := strconv.Atoi(c.Query("startIndex"))
+	 startIndex, err = strconv.Atoi(c.Query("startIndex"))
 
 	 matchStage := bson.D{{Key:"$match", Value: bson.D{{}}}}
 	 groupStage := bson.D{

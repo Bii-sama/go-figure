@@ -19,5 +19,18 @@ func Auth()gin.HandlerFunc {
 		}
 
 		claims, err:= utils.ValidateToken(clientToken)
+
+		if err != "" {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err})
+			c.Abort()
+			return
+		}
+
+		c.Set("email", claims.Email)
+		c.Set("firstname", claims.Firstname)
+		c.Set("lastname", claims.Lastname)
+		c.Set("userType", claims.User_Type)
+		c.Set("uid", claims.Uid)
+		c.Next()
 	}
 }
