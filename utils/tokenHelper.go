@@ -93,3 +93,28 @@ func UpdateTokens(signedToken string, signedRefreshToken string, uid string)  {
 
 	return
 }
+
+
+
+func ValidateToken(signedToken string)(claims *SignUpInfo, msg string)  {
+	token, err := jwt.ParseWithClaims(
+         signedToken,
+		 &SignUpInfo{},
+		 func(t *jwt.Token) (interface{}, error) {
+			return[]byte(SECRET_KEY), nil
+		 },
+	)
+
+	if err != nil{
+		msg = err.Error()
+		return
+	}
+
+	claims, ok := token.Claims.(*SignUpInfo)
+
+	if !ok {
+		msg = fmt.Sprintf("Invalid Token")
+		msg = err.Error()
+		return
+	}
+}
