@@ -80,6 +80,16 @@ func CreateBill() gin.HandlerFunc  {
 			log.Panicln("Invalid Email")
 		  }
 
+		  newBill, billErr := billCollection.InsertOne(ctx, bill)
+
+         if billErr != nil {
+			msg := fmt.Sprintf("New Bill was not created")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+			return
+		 }
+		 defer cancel()
+		 c.JSON(http.StatusOK, newBill)
+
 	}
 }
 
