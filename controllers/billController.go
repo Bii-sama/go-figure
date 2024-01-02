@@ -25,6 +25,11 @@ import (
 var billCollection *mongo.Collection = database.NewCollection(database.Client, "bills")
 var validateBill = validator.New()
 
+type BillResponse struct{
+	Count int64
+	Bill  models.Bill
+}
+
 func GetAllBills()  {
 	
 }
@@ -48,6 +53,23 @@ func CreateBill() gin.HandlerFunc  {
 		if isBillValid != nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error": isBillValid.Error()})
 		}
+
+		count, err := billCollection.CountDocuments(ctx, bson.M{"created_by": bill.Created_by})
+
+		if err != nil {
+			log.Panic(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+				 }
+		
+		
+		 response := BillResponse{
+					Count: count,
+					Bill:  bill,
+		  }
+		  
+		  c.JSON(http.StatusOK, response)
+
 	}
 }
 
