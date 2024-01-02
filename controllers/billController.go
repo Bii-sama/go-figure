@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
+	"strings"
 
 	"strconv"
 	"time"
@@ -18,7 +18,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"golang.org/x/crypto/bcrypt"
 )
 
 
@@ -43,6 +42,7 @@ func CreateBill() gin.HandlerFunc  {
 		var ctx, cancel = context.WithTimeout(context.Background(), 50 * time.Second)
 		defer cancel()
 		var bill models.Bill
+		var user models.User
 
 		if err := c.BindJSON(&bill); err != nil{
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -69,6 +69,16 @@ func CreateBill() gin.HandlerFunc  {
 		  }
 		  
 		  c.JSON(http.StatusOK, response)
+
+		  bill.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		  bill.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		  createdBy :=  strings.Split(*user.Email, "@")
+
+		  if len(createdBy) > 0{
+			bill.Created_by = &createdBy[0]
+		  } else {
+			log.Panicln("Invalid Email")
+		  }
 
 	}
 }
