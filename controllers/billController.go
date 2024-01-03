@@ -29,8 +29,26 @@ type BillResponse struct{
 	Bill  models.Bill
 }
 
-func GetAllBills()  {
-	
+func GetAllBills() gin.HandlerFunc  {
+return func(c *gin.Context) {
+
+	var bill *models.Bill
+if err := utils.CheckCreatedBy(c, *bill.Created_by); err != nil{
+c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+}
+
+var ctx, cancel = context.WithTimeout(context.Background(), 100 * time.Second)
+defer cancel()
+
+var bills []bson.M
+
+cursor, err := billCollection.Find(ctx, bson.M{"created_by": bill.Created_by})
+
+if err != nil{
+      c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+}
+	}
 }
 
 func GetABill()  {

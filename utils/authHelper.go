@@ -35,3 +35,17 @@ func CheckTypeEqualsUserId(ctx *gin.Context, userId string) (err error) {
 	return err
 	
 }
+
+
+func CheckCreatedBy(ctx *gin.Context, createdBy string )(err error)  {
+	billCreatedBy := ctx.GetString("created_by")
+
+	err = nil
+
+	if billCreatedBy != createdBy{
+		err = errors.New("Unauthorized to access this information")
+		return err
+	}
+
+	return err
+}
