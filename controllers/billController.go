@@ -68,8 +68,34 @@ if err := cursor.Err(); err != nil {
 	}
 }
 
-func GetABill()  {
-	
+func GetABill() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 50 * time.Second)
+		defer cancel()
+
+	var bill *models.Bill
+    billId := c.Param("bill_id")
+
+	if err := utils.CheckCreatedBy(c, *bill.Created_by); err != nil{
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+	}
+
+	if billId != bill.Bill_ID {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Bill does not exist"})
+		return
+	}
+
+	err:= billCollection.FindOne(ctx, bson.M{"bill_id": billId}).Decode(&bill)
+
+	if err != nil{
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, bill)
+	}
+
 }
 
 func CreateBill() gin.HandlerFunc  {
@@ -128,10 +154,10 @@ func CreateBill() gin.HandlerFunc  {
 	}
 }
 
-func UpdateBill()  {
-	
+func UpdateBill() gin.HandlerFunc  {
+	return func(ctx *gin.Context) {}
 }
 
-func DeleteBillBill()  {
-	
+func DeleteBillBill() gin.HandlerFunc  {
+	return func(ctx *gin.Context) {}
 }
