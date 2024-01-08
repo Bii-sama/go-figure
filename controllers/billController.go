@@ -160,7 +160,6 @@ func UpdateBill() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		billId := c.Param("bill_id")
 
-		// Fetch the existing bill from the database
 		var existingBill models.Bill
 		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 		defer cancel()
@@ -178,7 +177,11 @@ func UpdateBill() gin.HandlerFunc {
 		}
 
 	
-	updatedFields := models.Bill{} 
+	updatedFields := models.Bill{
+		Customername: existingBill.Customername,
+		Email: existingBill.Email,
+		Items: existingBill.Items,
+	} 
 
 		updatedFieldsMap := bson.M{
 			"$set": bson.M{
