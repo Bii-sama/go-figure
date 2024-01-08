@@ -11,7 +11,7 @@ import (
 type Bill struct{
 	ID        primitive.ObjectID  `bson:"_id,omitempty"`
 	Created_by *string             `json:"created_by" validate:"required,min=3,max=100"`
-	Firstname *string              `json:"first_name" validate:"required,min=3,max=100"`
+	Customername *string              `json:"customer_name" validate:"required,min=3,max=100"`
 	Items map[string]float64       `json:"items" validate:"required"`
 	Email *string                  `json:"email" validate:"email"`
 	Created_at   time.Time         `json:"created_at"`

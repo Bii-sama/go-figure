@@ -6,8 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
-	"strconv"
 	"time"
 
 	"github.com/Bii-sama/go-figure.git/database"
@@ -16,7 +14,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
+	// "go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -100,8 +100,7 @@ func GetABill() gin.HandlerFunc {
 
 func CreateBill() gin.HandlerFunc  {
 	return func(c *gin.Context) {
-		var ctx, cancel = context.WithTimeout(context.Background(), 50 * time.Second)
-		defer cancel()
+		
 		var bill models.Bill
 		var user models.User
 
@@ -114,6 +113,9 @@ func CreateBill() gin.HandlerFunc  {
 		if isBillValid != nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error": isBillValid.Error()})
 		}
+
+		var ctx, cancel = context.WithTimeout(context.Background(), 50 * time.Second)
+		defer cancel()
 
 		count, err := billCollection.CountDocuments(ctx, bson.M{"created_by": bill.Created_by})
 
@@ -154,10 +156,52 @@ func CreateBill() gin.HandlerFunc  {
 	}
 }
 
-func UpdateBill() gin.HandlerFunc  {
-	return func(ctx *gin.Context) {}
+func UpdateBill() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		billId := c.Param("bill_id")
+
+		// Fetch the existing bill from the database
+		var existingBill models.Bill
+		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
+		defer cancel()
+
+		opts := options.FindOne().SetProjection(bson.M{"_id": 0}) // Exclude _id field from the retrieved document
+
+		if err := billCollection.FindOne(ctx, bson.M{"bill_id": billId}, opts).Decode(&existingBill); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if existingBill.Bill_ID != billId {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bill does not exist"})
+			return
+		}
+
+	
+	updatedFields := models.Bill{} 
+
+		updatedFieldsMap := bson.M{
+			"$set": bson.M{
+				"customer_name": updatedFields.Customername,
+                "email": updatedFields.Email,
+				"items": updatedFields.Items,
+			},
+		}
+
+		updateOpts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+		// Perform the update operation
+		if err := billCollection.FindOneAndUpdate(ctx, bson.M{"bill_id": billId}, updatedFieldsMap, updateOpts).Decode(&existingBill); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, existingBill)
+	}
 }
 
-func DeleteBillBill() gin.HandlerFunc  {
+
+
+func DeleteBill() gin.HandlerFunc  {
 	return func(ctx *gin.Context) {}
 }
