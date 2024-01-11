@@ -164,6 +164,12 @@ func UpdateBill() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 		defer cancel()
 
+		if err := utils.CheckCreatedBy(c, *existingBill.Created_by); err != nil{
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+		}
+	
+
 		opts := options.FindOne().SetProjection(bson.M{"_id": 0}) // Exclude _id field from the retrieved document
 
 		if err := billCollection.FindOne(ctx, bson.M{"bill_id": billId}, opts).Decode(&existingBill); err != nil {
@@ -205,6 +211,32 @@ func UpdateBill() gin.HandlerFunc {
 
 
 
-func DeleteBill() gin.HandlerFunc  {
-	return func(ctx *gin.Context) {}
+func DeleteBill() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var bill models.Bill
+
+		billId := c.Param("bill_id")
+
+		if err := utils.CheckCreatedBy(c, *bill.Created_by); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if billId != bill.Bill_ID {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bill does not exist"})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
+		defer cancel()
+
+		result := billCollection.FindOneAndDelete(ctx, bson.M{"bill_id": billId})
+		if result.Err() != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": result.Err().Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Bill deleted successfully"})
+	}
 }
+
